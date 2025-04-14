@@ -5,15 +5,15 @@
 
 class JsonParser {
 public:
-    // Constructor: Takes the JSON string as an argument
     JsonParser(const String& jsonString);
-
-    // Getter function to get values from JSON
     void getJsonValues(const char* key1, const char* key2 = nullptr, const char* key3 = nullptr);
 
+    String ssid;
+    String password;
+
 private:
-    String jsonString;   // The original JSON string
-    StaticJsonDocument<200> doc;  // JSON document for parsing
+    String jsonString;
+    StaticJsonDocument<200> doc;
 };
 
 #endif
