@@ -5,21 +5,19 @@
 #include "MQTTHandler.hpp"
 #include "DHTSensor.hpp"
 
-const String firmwareURL = "http://192.168.100.42:5000/api/upload/get-firmware";
+const String firmwareURL = "http://192.168.100.42:5000/api/get-firmware?file=main.ino.merged.bin";
 
 bool fetchAndUpdate(const String& url) {
   HTTPClient http;
   http.begin(url);
 
   int httpCode = http.GET();
-  Serial.println(httpCode);
   if (httpCode == HTTP_CODE_OK) {
     int contentLength = http.getSize();
     WiFiClient* stream = http.getStreamPtr();
-    Serial.println(contentLength);
+
     if (Update.begin(contentLength)) {
       size_t written = Update.writeStream(*stream);
-      Serial.println(written);
       if (written == contentLength && Update.end() && Update.isFinished()) {
         Serial.println("Firmware update complete.");
         return true;
@@ -31,13 +29,11 @@ bool fetchAndUpdate(const String& url) {
   return false;
 }
 
-// // MQTT and WiFi setup
+// MQTT and WiFi setup
 const char* mqttBroker = "broker.emqx.io";
 const char* mqttTopic = "esp32/iot_temp";
-const char* mqttOTATopic = "esp32/ota";
 
 MQTTHandler mqtt(mqttBroker, mqttTopic, 2);
-MQTTHandler mqtt1(mqttBroker, mqttOTATopic, 2);
 WiFiHandler wifi("ESP32_AP", "password123", &mqtt);
 
 // Function prototypes
@@ -56,7 +52,6 @@ void setup() {
   Serial.println("\nWiFi connected");
 
   mqtt.setupMQTT();
-  mqtt1.setupMQTT();
 
   // Create Sensor task on Core 1
   xTaskCreatePinnedToCore(
@@ -79,13 +74,10 @@ void setup() {
     NULL,
     0
   );
- 
 }
 
 void loop() {
   mqtt.loop();  // Keep MQTT alive
-  mqtt1.loop();
-   
 }
 
 void SensorTask(void* parameter) {
@@ -102,7 +94,6 @@ void OTATask(void* parameter) {
     if (WiFi.status() == WL_CONNECTED) {
       Serial.println("Checking for firmware update...");
       bool success = fetchAndUpdate(firmwareURL);
-      Serial.println(success);
       if (success) {
         Serial.println("Rebooting...");
         delay(1000);
@@ -112,27 +103,7 @@ void OTATask(void* parameter) {
       Serial.println("WiFi not connected. Skipping OTA check.");
     }
 
-
-    vTaskDelay(10000 / portTICK_PERIOD_MS); // check every 10 seconds
- 
+    // Check every 10 minutes
+    vTaskDelay(600000 / portTICK_PERIOD_MS); // 600000 ms = 10 mins
   }
 }
-
-
-
-
-// #define LED_BUILTIN 2
-
-
-// void setup() {
-
-//   pinMode(LED_BUILTIN, OUTPUT);
-// }
-
-
-// void loop() {
-//   digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
-//   delay(1000);                      // wait for a second
-//   digitalWrite(LED_BUILTIN, LOW);   // turn the LED off by making the voltage LOW
-//   delay(1000);                      // wait for a second
-// }
