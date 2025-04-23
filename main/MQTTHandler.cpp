@@ -130,7 +130,7 @@ void MQTTHandler::loop() {
 
         if (WiFi.status() == WL_CONNECTED) {
             HTTPClient http;
-            http.begin("http://192.168.100.42:5000/api/temp");
+            http.begin("https://air-quality-backend-rho.vercel.app/api/temp");
             http.addHeader("Content-Type", "application/json");
             http.POST(payload);
             http.end();
