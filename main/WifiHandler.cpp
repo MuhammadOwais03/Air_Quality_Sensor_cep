@@ -66,15 +66,7 @@ void WiFiHandler::WiFiTask(void* parameter) {
     WiFiHandler* handler = static_cast<WiFiHandler*>(parameter);
 
     handler->connect();
-    Serial.println("Gibbersh1");
-
-    // if (handler->mqtt != nullptr) {
-    //     // handler->mqtt->setup();  // ✅ Correct call via pointer
-    //     Serial.println("Gibbersh2");
-    // } else {
-    //     Serial.println("MQTT pointer is null!");
-    // }
-
+    
     while (1) {
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }

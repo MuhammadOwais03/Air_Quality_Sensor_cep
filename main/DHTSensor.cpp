@@ -1,6 +1,8 @@
 #include "DHTSensor.hpp"
 
+
 DHTSensor dht11(4, DHT11);
+
 
 DHTSensor::DHTSensor(int dhtPin, int dhtType)
     : pin(dhtPin), type(dhtType), humidity(0.0), temperature(0.0), dht(dhtPin, dhtType) {}
@@ -12,6 +14,7 @@ void DHTSensor::begin() {
 bool DHTSensor::readValues() {
     float h = dht.readHumidity();
     float t = dht.readTemperature();
+
 
     if (isnan(h) || isnan(t)) {
         return false;
