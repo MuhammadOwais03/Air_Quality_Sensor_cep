@@ -12,6 +12,7 @@ public:
     void setupMQTT();
     void loop();
     void setOTACallback(std::function<void()> callback);
+    void setControlCallback(std::function<void(const String&)> callback);
 
 private:
     const char *broker;
@@ -21,6 +22,7 @@ private:
     PubSubClient client;
     long lastMsgTime;
     std::function<void()> otaCallback;
+    std::function<void(const String&)> controlCallback;
 
     void mqttCallback(char *topic, byte *message, unsigned int length);
     void handleMessage(String topicReceived, String message);

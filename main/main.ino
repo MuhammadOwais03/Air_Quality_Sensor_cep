@@ -126,9 +126,11 @@ bool fetchAndUpdate(const String& url) {
 const char* mqttBroker = "broker.emqx.io";
 const char* mqttTopic = "esp32/iot_temp";
 const char* mqttOTATopic = "esp32/ota";
+const char* mqttControlTopic = "esp32/control";
 
 MQTTHandler mqtt(mqttBroker, mqttTopic, 2);
 MQTTHandler mqtt1(mqttBroker, mqttOTATopic, 2);
+MQTTHandler mqtt2(mqttBroker, mqttControlTopic, 2);
 WiFiHandler wifi("ESP32_AP", "password123", &mqtt);
 
 // Function prototypes
@@ -148,6 +150,7 @@ void setup() {
 
   mqtt.setupMQTT();
   mqtt1.setupMQTT();
+  mqtt2.setupMQTT();
 
   // Set the OTA callback to set otaRequested flag
   mqtt1.setOTACallback([]() {
@@ -184,6 +187,7 @@ void setup() {
 void loop() {
   mqtt.loop();  // Keep MQTT alive
   mqtt1.loop();
+  mqtt2.loop();
 
   // Check if OTA is requested and trigger OTA task
   if (otaRequested) {
@@ -246,3 +250,16 @@ void OTATask(void* parameter) {
 
   vTaskDelete(NULL); // Delete the task when done
 }
+
+
+void goToSleepFor30Seconds() {
+  Serial.println("Going to sleep for 30 seconds...");
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Sleeping...");
+
+  delay(1000);  // Allow message to show before sleeping
+  esp_sleep_enable_timer_wakeup(30 * 1000000); // 30 seconds in microseconds
+  esp_deep_sleep_start();
+}
+

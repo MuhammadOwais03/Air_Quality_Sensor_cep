@@ -27,28 +27,6 @@ void MQTTHandler::mqttCallback(char *topic, byte *message, unsigned int length) 
     handleMessage(String(topic), messageTemp);
 }
 
-// void MQTTHandler::handleMessage(String topicReceived, String message) {
-//   Serial.println(message);
-//   if (message == "New firmware uploaded") {
-//             Serial.println(message);
-//             if (otaCallback) {
-//               Serial.println("ENTER");
-//                 otaCallback();  // Trigger OTA update
-//             }}
-//     if (topicReceived == topic) {
-//         if (message == "on") {
-//             controlLED(true);
-//         } else if (message == "off") {
-//             controlLED(false);
-//         } else if (message.message == "New firmware uploaded") {
-//             Serial.println(message);
-//             if (otaCallback) {
-//               Serial.println("ENTER");
-//                 otaCallback();  // Trigger OTA update
-//             }
-//         }
-//     }
-// }
 
 void MQTTHandler::handleMessage(String topicReceived, String message) {
     Serial.println("Received: " + message);
@@ -72,6 +50,13 @@ void MQTTHandler::handleMessage(String topicReceived, String message) {
                 otaCallback();  // Trigger OTA update
             }
         }
+        else if (msg == "Sleep") {
+        Serial.println("Device going to sleep for 30 seconds...");
+        
+        delay(100);  // Give LCD a moment to update
+        esp_sleep_enable_timer_wakeup(30 * 1000000); // 30 seconds in microseconds
+        esp_deep_sleep_start();  // Enter deep sleep
+    }
         return; // No need to check further
     }
 
@@ -89,6 +74,13 @@ void MQTTHandler::handleMessage(String topicReceived, String message) {
         } else if (cmd == "off") {
             controlLED(false);
         }
+        else if (cmd == "Sleep") {
+        Serial.println("Device going to sleep for 30 seconds...");
+        
+        delay(100);  // Give LCD a moment to update
+        esp_sleep_enable_timer_wakeup(30 * 1000000); // 30 seconds in microseconds
+        esp_deep_sleep_start();  // Enter deep sleep
+    }
     }
 }
 
@@ -112,6 +104,11 @@ String MQTTHandler::getTemperatureHumidtyJSON() {
     snprintf(buffer, sizeof(buffer), "{\"temperature\": %.2f, \"humidity\": %.2f}", dht11.temperature, dht11.humidity);
     return String(buffer);
 }
+
+void MQTTHandler::setControlCallback(std::function<void(const String&)> callback) {
+    controlCallback = callback;
+}
+
 
 void MQTTHandler::loop() {
     if (!client.connected()) {
